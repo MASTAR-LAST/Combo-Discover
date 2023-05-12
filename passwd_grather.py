@@ -1,4 +1,5 @@
 import sys
+import re
 
 class Prospector:
     def __init__(self, combo_file, base_file, email_file):
@@ -44,7 +45,7 @@ class Prospector:
 
             percentage_passwd = (find_passwd / total_passwd) * 100
             percentage_email = (find_email / total_email) * 100
-
+        
         print("Extraction completed !", sep='\n')
         print("------------------------------Passwords-info------------------------------")
         print(f"{find_passwd} of the {total_passwd} pre-existing passwords have been found", sep='\n')
@@ -54,6 +55,74 @@ class Prospector:
         print(f"{find_email} of the {total_email} pre-existing emails have been found", sep='\n')
         print(f"Pre-existing emails: {percentage_email:.2f}%\n")
 
+def email_slicer(emails_file):
+
+    with open(f"{emails_file}", "r") as file:
+            lines = file.readlines()
+
+            email_list = []
+            for line in lines:
+                emails = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', line)
+                email_list.extend(emails)
+
+            gmail_list: list[str] = []
+            yahoo_list: list[str] = []
+            hotmail_list: list[str] = []
+            garbage_list: list[str] = []
+            live_list: list[str] = []
+
+            gmail_num: int = 0
+            yahoo_num: int = 0
+            hotmail_num: int = 0
+            garbage_num: int = 0
+            live_num: int = 0
+
+            for email in email_list:
+                if 'gmail.com' in email:
+                    gmail_list.append(email)
+                    gmail_num += 1
+                elif 'yahoo.com' in email:
+                    yahoo_list.append(email)
+                    yahoo_num += 1
+                elif 'hotmail.com' in email:
+                    hotmail_list.append(email)
+                    hotmail_num += 1
+                elif 'live.com' in email:
+                    live_list.append(email)
+                    live_num += 1
+                else:
+                    garbage_list.append(email)
+                    garbage_num += 1
+
+            with open('email_slicer/gmail_list.txt', 'w') as f:
+                for email in gmail_list:
+                    f.write(email + '\n')
+
+            with open('email_slicer/yahoo_list.txt', 'w') as f:
+                for email in yahoo_list:
+                    f.write(email + '\n')
+
+            with open('email_slicer/hotmail_list.txt', 'w') as f:
+                for email in hotmail_list:
+                    f.write(email + '\n')
+
+            with open('email_slicer/garbage_list.txt', 'w') as f:
+                for email in garbage_list:
+                    f.write(email + '\n')
+
+            with open('email_slicer/live_list.txt', 'w') as f:
+                for email in live_list:
+                    f.write(email + '\n')
+
+    print("Results:")
+    print(f"gmail emails: {gmail_num}")
+    print(f"yahoo emails: {yahoo_num}")
+    print(f"hotmail emails: {hotmail_num}")
+    print(f"live emails: {live_num}")
+    print(f"garbage emails: {garbage_num}")
+
 test = Prospector('extracted/336K UK.txt', 'test.txt', 'emails.txt')
 
 test.run()
+
+email_slicer("emails.txt")
